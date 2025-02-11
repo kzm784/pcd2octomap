@@ -11,15 +11,13 @@ class Pcd2Octomap : public rclcpp::Node
 {
 public:
   explicit Pcd2Octomap(const rclcpp::NodeOptions & options);
+  void convert();
 
 private:
-  // パラメータ
+  // Parameters
   std::string pcd_path_;
   std::string output_octmap_name_;
   double resolution_;
-
-  // PCDファイルからOctoMapへ変換する関数
-  void convert();
 };
 
 #endif  // PCD2OCTOMAP__PCD2OCTOMAP_HPP_

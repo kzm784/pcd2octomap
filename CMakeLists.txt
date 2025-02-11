@@ -11,16 +11,18 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
-  src/${PROJECT_NAME}.cpp
+  src/pcd2octomap.cpp
+  src/pcd_occlusion_fileter.cpp
 )
-
-if(OpenMP_CXX_FOUND)
-  target_link_libraries(${PROJECT_NAME} ${OpenMP_CXX_LIBRARIES})
-endif()
 
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "Pcd2Octomap"
-  EXECUTABLE ${PROJECT_NAME}_node
+  EXECUTABLE pcd2octomap_node
+)
+
+rclcpp_components_register_node(${PROJECT_NAME}
+  PLUGIN "PcdOcclusionFilter"
+  EXECUTABLE pcd_occlusion_filter_node
 )
 
 if(BUILD_TESTING)

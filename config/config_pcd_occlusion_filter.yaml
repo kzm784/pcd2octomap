@@ -1,0 +1,7 @@
+pcd_occlusion_filter_node:
+  ros__parameters:
+    pcd_path: "/home/kazuma/map_ws/src/map_divider/data/indoor_outdoor_raw.pcd"
+    resolution: 0.1
+    position_x: 22.7954597473145
+    position_y: -3.28243947029114
+    position_z: 1.0
