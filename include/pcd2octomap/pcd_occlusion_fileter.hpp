@@ -25,6 +25,9 @@ private:
   float position_x_;
   float position_y_;
   float position_z_;
+  double epsilon_;
+  double dilation_radius_;
+  double duplicate_threshold_;
 };
 
 #endif  // PCD2OCTOMAP__PCD_OCCLUSION_FILTER_HPP_

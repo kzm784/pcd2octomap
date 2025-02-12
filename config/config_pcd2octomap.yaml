@@ -2,4 +2,4 @@ pcd2octomap_node:
   ros__parameters:
     pcd_path: "/home/kazuma/map_ws/src/map_divider/data/indoor_outdoor_raw.pcd"
     output_octmap_name: indoor_outdoor_raw.bt
-    resolution: 0.1
+    resolution: 0.2

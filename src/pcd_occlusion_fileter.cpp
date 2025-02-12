@@ -9,6 +9,9 @@ PcdOcclusionFilter::PcdOcclusionFilter(const rclcpp::NodeOptions & options)
   this->declare_parameter<float>("position_x", 0.0);
   this->declare_parameter<float>("position_y", 0.0);
   this->declare_parameter<float>("position_z", 0.0);
+  this->declare_parameter<double>("epsilon", 0.1);
+  this->declare_parameter<double>("dilation_radius", 0.1);
+  this->declare_parameter<double>("duplicate_threshold", 0.001);
 
   // Retrieve parameters
   this->get_parameter("pcd_path", pcd_path_);
@@ -16,6 +19,9 @@ PcdOcclusionFilter::PcdOcclusionFilter(const rclcpp::NodeOptions & options)
   this->get_parameter("position_x", position_x_);
   this->get_parameter("position_y", position_y_);
   this->get_parameter("position_z", position_z_);
+  this->get_parameter("epsilon", epsilon_);
+  this->get_parameter("dilation_radius", dilation_radius_);
+  this->get_parameter("duplicate_threshold", duplicate_threshold_);
 
   // Log retrieved parameters
   RCLCPP_INFO(this->get_logger(), "pcd_path: %s", pcd_path_.c_str());
@@ -23,6 +29,9 @@ PcdOcclusionFilter::PcdOcclusionFilter(const rclcpp::NodeOptions & options)
   RCLCPP_INFO(this->get_logger(), "position_x: %f", position_x_);
   RCLCPP_INFO(this->get_logger(), "position_y: %f", position_y_);
   RCLCPP_INFO(this->get_logger(), "position_z: %f", position_z_);
+  RCLCPP_INFO(this->get_logger(), "epsilon: %lf", epsilon_);
+  RCLCPP_INFO(this->get_logger(), "dilation_radius: %lf", dilation_radius_);
+  RCLCPP_INFO(this->get_logger(), "duplicate_threshold: %lf", duplicate_threshold_);
 
   // Execute conversion from PCD to OctoMap with occlusion filtering and dilation
   convert();
@@ -52,7 +61,6 @@ void PcdOcclusionFilter::convert()
   pcl::PointCloud<pcl::PointXYZRGBA> visible_cloud;
   // Set the observation point using the provided parameters
   octomap::point3d observation_point(position_x_, position_y_, position_z_);
-  const double epsilon = 0.01;
   for (const auto & point : cloud.points) {
     octomap::point3d target(point.x, point.y, point.z);
     octomap::point3d vec = target - observation_point;
@@ -74,7 +82,7 @@ void PcdOcclusionFilter::convert()
     if (hit_found) {
       double hit_distance = (hit - observation_point).norm();
       // If an obstacle is encountered before reaching the target, skip this point (occluded)
-      if (hit_distance < distance - epsilon) {
+      if (hit_distance < distance - epsilon_) {
         continue;
       }
     }
@@ -83,10 +91,6 @@ void PcdOcclusionFilter::convert()
   RCLCPP_INFO(this->get_logger(), "Visible points after occlusion filtering: %zu", visible_cloud.points.size());
 
   // 4. Include nearby points (dilation process)
-  // Here, we add points from the original cloud that are within a radius of 0.5 m from any visible point
-  const double dilation_radius = 0.5;       // Radius for neighborhood search
-  const double duplicate_threshold = 1e-6;    // Threshold for duplicate detection
-
   // Build a KD-Tree for fast neighborhood search in the visible cloud
   pcl::KdTreeFLANN<pcl::PointXYZRGBA> kd_tree;
   kd_tree.setInputCloud(visible_cloud.makeShared());
@@ -98,11 +102,11 @@ void PcdOcclusionFilter::convert()
     // Search for neighbors within the dilation radius using the KD-Tree
     std::vector<int> indices;
     std::vector<float> sqr_distances;
-    if (kd_tree.radiusSearch(point, dilation_radius, indices, sqr_distances) > 0) {
+    if (kd_tree.radiusSearch(point, dilation_radius_, indices, sqr_distances) > 0) {
       // Check if the point already exists in the visible cloud (if nearly identical, it's a duplicate)
       bool already_exists = false;
       for (size_t i = 0; i < indices.size(); ++i) {
-        if (sqr_distances[i] < duplicate_threshold * duplicate_threshold) {
+        if (sqr_distances[i] < duplicate_threshold_ * duplicate_threshold_) {
           already_exists = true;
           break;
         }
