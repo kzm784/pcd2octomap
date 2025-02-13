@@ -2,8 +2,8 @@ pcd_occlusion_filter_node:
   ros__parameters:
     pcd_path: "/home/kazuma/map_ws/src/map_divider/data/indoor_outdoor_raw.pcd"
     resolution: 0.2
-    position_x: 2.39788913726807
-    position_y: -23.7495956420898
+    position_x: 30.5576477050781
+    position_y: -32.5560607910156
     position_z: 2.0
     epsilon: 0.2
     dilation_radius: 0.5
